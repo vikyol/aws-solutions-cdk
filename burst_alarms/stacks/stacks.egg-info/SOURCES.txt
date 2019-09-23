@@ -1,0 +1,5 @@
+stacks/stacks.egg-info/PKG-INFO
+stacks/stacks.egg-info/SOURCES.txt
+stacks/stacks.egg-info/dependency_links.txt
+stacks/stacks.egg-info/requires.txt
+stacks/stacks.egg-info/top_level.txt
