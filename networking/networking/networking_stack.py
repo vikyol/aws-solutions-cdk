@@ -5,11 +5,15 @@ from aws_cdk import (
 
 
 class NetworkingStack(core.Stack):
+    app_vpc = None
+    nat_vpc = None
+    tgw = None
+    tgw_nat_attachment = None
 
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
-        nat_vpc = _ec2.Vpc(
+        self.nat_vpc = _ec2.Vpc(
             self,
             id="nat_vpc",
             cidr="10.10.0.0/16",
@@ -31,7 +35,7 @@ class NetworkingStack(core.Stack):
             ]
         )
 
-        app_vpc = _ec2.Vpc(
+        self.app_vpc = _ec2.Vpc(
             self,
             id="app_vpc",
             cidr="10.30.0.0/16",
@@ -53,41 +57,29 @@ class NetworkingStack(core.Stack):
             ]
         )
 
-        tgw = _ec2.CfnTransitGateway(
+        self.tgw = _ec2.CfnTransitGateway(
             self,
             id='tgw-test',
             amazon_side_asn=65520,
             auto_accept_shared_attachments="enable",
             default_route_table_association="enable",
-            default_route_table_propagation="enable"
+            default_route_table_propagation="enable",
+            tags=[core.CfnTag(key='Name', value='TGW-PoC')]
         )
 
-        tgw_nat_attachment = _ec2.CfnTransitGatewayAttachment(
+
+        self.tgw_nat_attachment = _ec2.CfnTransitGatewayAttachment(
             self,
             id="tgw-natvpc",
-            transit_gateway_id=tgw.ref,
-            vpc_id=nat_vpc.vpc_id,
-            subnet_ids=[pub.subnet_id for pub in nat_vpc.public_subnets]
+            transit_gateway_id=self.tgw.ref,
+            vpc_id=self.nat_vpc.vpc_id,
+            subnet_ids=[subnet.subnet_id for subnet in self.nat_vpc.private_subnets]
         )
 
-        tgw_app_attachment = _ec2.CfnTransitGatewayAttachment(
+        self.tgw_app_attachment = _ec2.CfnTransitGatewayAttachment(
             self,
             id="tgw-appvpc",
-            transit_gateway_id=tgw.ref,
-            vpc_id=app_vpc.vpc_id,
-            subnet_ids=[pub.subnet_id for pub in app_vpc.public_subnets]
-        )
-
-        app-TgwRt = _ec2.CfnTransitGatewayRouteTable(
-            self,
-            id='appTgwRt',
-            transit_gateway_id=tgw.ref,
-        )
-
-        _ec2.CfnTransitGatewayRoute(
-            self,
-            id='tgw-nat-routes',
-            transit_gateway_route_table_id='',
-            destination_cidr_block='10.10.0.0/16',
-            transit_gateway_attachment_id=tgw_app_attachment.ref
+            transit_gateway_id=self.tgw.ref,
+            vpc_id=self.app_vpc.vpc_id,
+            subnet_ids=[subnet.subnet_id for subnet in self.app_vpc.isolated_subnets]
         )
