@@ -7,7 +7,7 @@ from aws_cdk import (
 
 
 class EC2Stack(core.Stack):
-    SSH_IP = '10.0.0.0/8'
+    SSH_IP = '0.0.0.0/0'
     SSH_PORT = 22
     AMI_ID=''
 
@@ -20,13 +20,13 @@ class EC2Stack(core.Stack):
             vpc=nw_stack.app_vpc
         )
 
-        ec2_sg.add_ingress_rule(
-            peer=_ec2.Peer.prefix_list(EC2Stack.SSH_IP),
-            connection=_ec2.Port(protocol=_ec2.Protocol.TCP, string_representation="tcp_22", from_port=EC2Stack.SSH_PORT, to_port=EC2Stack.SSH_PORT),
-            description='Allow SSH access from SSH_IP'
+        bastion_sg = _ec2.SecurityGroup(
+            self,
+            id='bastion-sg',
+            vpc=nw_stack.app_vpc
         )
 
-        _ec2.Instance(
+        prv = _ec2.Instance(
             self,
             id='tgw_poc_instance',
             instance_type=_ec2.InstanceType('t3.micro'),
@@ -35,6 +35,40 @@ class EC2Stack(core.Stack):
             security_group=ec2_sg,
             instance_name='tgw_nat_test_instance',
             vpc=nw_stack.app_vpc,
-            vpc_subnets=nw_stack.app_vpc.select_subnets(subnet_type=_ec2.SubnetType.ISOLATED)
+            vpc_subnets=_ec2.SubnetSelection(subnet_type=_ec2.SubnetType.ISOLATED)
         )
+
+
+        bastion = _ec2.Instance(
+            self,
+            id='tgw_poc_bastion',
+            instance_type=_ec2.InstanceType('t3.nano'),
+            machine_image=_ec2.AmazonLinuxImage(),
+            key_name='tgw_test',
+            security_group=bastion_sg,
+            instance_name='tgw_test_bastion',
+            vpc=nw_stack.app_vpc,
+            vpc_subnets=_ec2.SubnetSelection(subnet_type=_ec2.SubnetType.PUBLIC)
+        )
+
+        ssh_port = _ec2.Port(
+                        protocol=_ec2.Protocol.TCP,
+                        string_representation="tcp_22",
+                        from_port=EC2Stack.SSH_PORT,
+                        to_port=EC2Stack.SSH_PORT
+                    )
+
+        bastion_sg.add_ingress_rule(
+            peer=_ec2.Peer.ipv4(EC2Stack.SSH_IP),
+            connection=ssh_port,
+            description='Allow SSH access from SSH_IP'
+        )
+
+        ec2_sg.add_ingress_rule(
+            peer=bastion_sg,
+            connection=ssh_port,
+            description='Allow SSH access from bastion host'
+        )
+
+
 

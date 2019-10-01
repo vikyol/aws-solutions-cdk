@@ -32,6 +32,7 @@ class NetworkingStack(core.Stack):
                     name='nat-private',
                     subnet_type=_ec2.SubnetType.PRIVATE
                 )
+
             ]
         )
 
@@ -67,13 +68,14 @@ class NetworkingStack(core.Stack):
             tags=[core.CfnTag(key='Name', value='TGW-PoC')]
         )
 
-
         self.tgw_nat_attachment = _ec2.CfnTransitGatewayAttachment(
             self,
             id="tgw-natvpc",
             transit_gateway_id=self.tgw.ref,
             vpc_id=self.nat_vpc.vpc_id,
-            subnet_ids=[subnet.subnet_id for subnet in self.nat_vpc.private_subnets]
+            subnet_ids=[subnet.subnet_id for subnet in self.nat_vpc.private_subnets],
+            tags=[core.CfnTag(key='Name', value='TGW-Nat-Attachment')]
+
         )
 
         self.tgw_app_attachment = _ec2.CfnTransitGatewayAttachment(
@@ -81,5 +83,6 @@ class NetworkingStack(core.Stack):
             id="tgw-appvpc",
             transit_gateway_id=self.tgw.ref,
             vpc_id=self.app_vpc.vpc_id,
-            subnet_ids=[subnet.subnet_id for subnet in self.app_vpc.isolated_subnets]
+            subnet_ids=[subnet.subnet_id for subnet in self.app_vpc.isolated_subnets],
+            tags=[core.CfnTag(key='Name', value='TGW-App-Attachment')]
         )

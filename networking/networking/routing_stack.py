@@ -16,6 +16,35 @@ class RoutingStack(core.Stack):
             self,
             id='TgwRt',
             transit_gateway_id=nw_stack.tgw.ref,
+            tags=[core.CfnTag(key='Name', value='TGW-Nat-Rt')]
+        )
+
+        _ec2.CfnTransitGatewayRouteTablePropagation(
+            self,
+            id='tgw-natvpc-propagation',
+            transit_gateway_route_table_id=tgwRt.ref,
+            transit_gateway_attachment_id=nw_stack.tgw_nat_attachment.ref
+        )
+
+        _ec2.CfnTransitGatewayRouteTableAssociation(
+            self,
+            id='tgw-natvpc-rt-association',
+            transit_gateway_route_table_id=tgwRt.ref,
+            transit_gateway_attachment_id=nw_stack.tgw_nat_attachment.ref
+        )
+
+        _ec2.CfnTransitGatewayRouteTablePropagation(
+            self,
+            id='tgw-appvpc-propagation',
+            transit_gateway_route_table_id=tgwRt.ref,
+            transit_gateway_attachment_id=nw_stack.tgw_app_attachment.ref
+        )
+
+        _ec2.CfnTransitGatewayRouteTableAssociation(
+            self,
+            id='tgw-appvpc-rt-association',
+            transit_gateway_route_table_id=tgwRt.ref,
+            transit_gateway_attachment_id=nw_stack.tgw_app_attachment.ref
         )
 
         # TGW Routing
