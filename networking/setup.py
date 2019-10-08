@@ -6,7 +6,7 @@ with open("README.md") as fp:
 
 
 setuptools.setup(
-    name="networking",
+    name="stacks",
     version="0.0.1",
 
     description="An empty CDK Python app",
@@ -15,8 +15,8 @@ setuptools.setup(
 
     author="author",
 
-    package_dir={"": "networking"},
-    packages=setuptools.find_packages(where="networking"),
+    package_dir={"": "stacks"},
+    packages=setuptools.find_packages(where="stacks"),
 
     install_requires=[
         "aws-cdk.core",

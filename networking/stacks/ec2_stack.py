@@ -9,7 +9,7 @@ from aws_cdk import (
 class EC2Stack(core.Stack):
     SSH_IP = '0.0.0.0/0'
     SSH_PORT = 22
-    AMI_ID=''
+    KEY_PAIR = 'tgw_test'
 
     def __init__(self, scope: core.Construct, id: str, nw_stack: core.Stack, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
@@ -29,9 +29,9 @@ class EC2Stack(core.Stack):
         prv = _ec2.Instance(
             self,
             id='tgw_poc_instance',
-            instance_type=_ec2.InstanceType('t3.micro'),
+            instance_type=_ec2.InstanceType('t3a.nano'),
             machine_image=_ec2.AmazonLinuxImage(),
-            key_name='tgw_test',
+            key_name=EC2Stack.KEY_PAIR,
             security_group=ec2_sg,
             instance_name='tgw_nat_test_instance',
             vpc=nw_stack.app_vpc,
@@ -42,9 +42,9 @@ class EC2Stack(core.Stack):
         bastion = _ec2.Instance(
             self,
             id='tgw_poc_bastion',
-            instance_type=_ec2.InstanceType('t3.nano'),
+            instance_type=_ec2.InstanceType('t3a.nano'),
             machine_image=_ec2.AmazonLinuxImage(),
-            key_name='tgw_test',
+            key_name=EC2Stack.KEY_PAIR,
             security_group=bastion_sg,
             instance_name='tgw_test_bastion',
             vpc=nw_stack.app_vpc,
