@@ -6,6 +6,14 @@ from stacks.autotags_stack import AutoTagsStack
 
 
 app = core.App()
-AutoTagsStack(app, "autotags")
+AutoTagsStack(app,
+            "autotags",
+            env={'region': 'eu-central-1'},
+            tags={
+                "CostCenter": "",
+                "Project": "",
+                "Owner": ""
+            }
+)
 
 app.synth()

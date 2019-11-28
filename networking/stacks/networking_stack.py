@@ -13,22 +13,24 @@ class NetworkingStack(core.Stack):
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
+        vpc = _ec2.Vpc.from_lookup(self, "my_vpc", is_default=True)
+
         self.nat_vpc = _ec2.Vpc(
             self,
             id="nat_vpc",
-            cidr="10.10.0.0/16",
+            cidr="10.77.4.0/24",
             enable_dns_hostnames=True,
             enable_dns_support=True,
             max_azs=1,
             nat_gateways=1,
             subnet_configuration=[
                 _ec2.SubnetConfiguration(
-                    cidr_mask=24,
+                    cidr_mask=25,
                     name='nat-public',
                     subnet_type=_ec2.SubnetType.PUBLIC
                 ),
                 _ec2.SubnetConfiguration(
-                    cidr_mask=24,
+                    cidr_mask=25,
                     name='nat-private',
                     subnet_type=_ec2.SubnetType.PRIVATE
                 )
@@ -39,19 +41,19 @@ class NetworkingStack(core.Stack):
         self.app_vpc = _ec2.Vpc(
             self,
             id="app_vpc",
-            cidr="10.30.0.0/16",
+            cidr="10.77.5.0/24",
             enable_dns_hostnames=True,
             enable_dns_support=True,
             max_azs=1,
             nat_gateways=0,
             subnet_configuration=[
                 _ec2.SubnetConfiguration(
-                    cidr_mask=24,
+                    cidr_mask=25,
                     name='app-public1',
                     subnet_type=_ec2.SubnetType.PUBLIC
                 ),
                 _ec2.SubnetConfiguration(
-                    cidr_mask=24,
+                    cidr_mask=25,
                     name='app-private1',
                     subnet_type=_ec2.SubnetType.ISOLATED
                 )

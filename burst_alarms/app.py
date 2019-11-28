@@ -6,6 +6,14 @@ from stacks.cwalarms_stack import AlarmStack
 
 
 app = core.App()
-AlarmStack(app, "stacks")
+AlarmStack(app,
+           "burst_alarms_stack",
+            env={'region': 'eu-central-1'},
+            tags={
+                "CostCenter": "",
+                "Project": "",
+                "Owner": ""
+            }
+)
 
 app.synth()
